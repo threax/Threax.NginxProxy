@@ -3,10 +3,12 @@ using Docker.DotNet.Models;
 using Newtonsoft.Json;
 using System;
 using System.Buffers.Text;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DockerClient
@@ -16,10 +18,35 @@ namespace DockerClient
         static async Task Main(string[] args)
         {
             //var host = "unix:///var/run/docker.sock"; //from inside container
-            var host = args[0];
-            var network = args[1];
-            var outFile = args[2];
+            var host = "unix:///var/run/docker.sock";
+            var network = "appnet";
+            var outFile = "/etc/nginx/nginx.conf";
+            var sleepTime = 5000;
 
+            //Load the config once for initial settings
+            await LoadConfig(host, network, outFile);
+
+            //Start nginx
+            var processStartInfo = new ProcessStartInfo("nginx");
+            using (var process = Process.Start(processStartInfo))
+            {
+                while (true)
+                {
+                    if (await LoadConfig(host, network, outFile))
+                    {
+                        using (var reload = Process.Start("nginx", "-s reload"))
+                        {
+                            reload.WaitForExit();
+                        }
+                    }
+
+                    Thread.Sleep(sleepTime);
+                }
+            }
+        }
+
+        private static async Task<bool> LoadConfig(string host, string network, string outFile)
+        {
             var config = new DockerClientConfiguration(new Uri(host));
             var client = config.CreateClient();
 
@@ -40,10 +67,28 @@ namespace DockerClient
             var configWriter = new NginxConfWriter();
             var nginxConfig = configWriter.GetConfig(threaxNginxLabeled);
 
-            using (var writer = new StreamWriter(File.Open(outFile, FileMode.Create)))
+            bool updateFile;
+            using(var reader = new StreamReader(File.Open(outFile, FileMode.OpenOrCreate)))
             {
-                await writer.WriteAsync(nginxConfig);
+                var currentFile = await reader.ReadToEndAsync();
+                updateFile = currentFile != nginxConfig;
             }
+
+            if (updateFile)
+            {
+                Console.WriteLine("New mappings found.");
+                foreach (var item in threaxNginxLabeled)
+                {
+                    Console.WriteLine($"Mapping {item.Host} to {item.Ip} for container {item.Name} from {item.Image}");
+                }
+
+                using (var writer = new StreamWriter(File.Open(outFile, FileMode.Create)))
+                {
+                    await writer.WriteAsync(nginxConfig);
+                }
+            }
+
+            return updateFile;
         }
     }
 }
