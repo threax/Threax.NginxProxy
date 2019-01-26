@@ -1,4 +1,4 @@
-# Threax.Nginx
+# Threax.NginxProxy
 This is a program that monitors docker for new containers on a network and updates the nginx.conf to include those entries.
 
 ## How to Use
