@@ -38,8 +38,8 @@ http {{
 server {{
         listen 80;
 		listen                443 ssl;
-		ssl_certificate       /etc/ssl/live/dev.threax.com/fullchain.pem;
-		ssl_certificate_key   /etc/ssl/live/dev.threax.com/privkey.pem;
+		ssl_certificate       /run/secrets/public.pem;
+		ssl_certificate_key   /run/secrets/private.pem;
 
 		server_name {networkInfo.Host};
  

@@ -1,8 +1,14 @@
-version: "3"
+version: '3.4'
 networks:
   appnet:
     external:
       name: appnet
+
+secrets:
+  public.pem:
+    external: true
+  private.pem:
+    external: true
 
 services:
   server:
@@ -15,8 +21,10 @@ services:
     networks:
       - appnet
     volumes:
-      - ../../DockerAppServer/certbot-data:/etc/ssl
       - /var/run/docker.sock:/var/run/docker.sock
+    secrets:
+      - public.pem
+      - private.pem
     ports:
       - "80:80"
       - "443:443"
