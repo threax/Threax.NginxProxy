@@ -12,8 +12,8 @@ secrets:
 
 services:
   server:
-    image: threax.proxy
-    container_name: threaxproxy
+    image: threax/proxy
+    container_name: threax-proxy
     build:
       context: .
       dockerfile: Dockerfile
