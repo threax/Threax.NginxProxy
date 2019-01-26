@@ -20,8 +20,9 @@ docker network create appnet
 ```
 Start the service
 ```
-docker-compose up
+docker-compose up -d
 ```
+Or call it without -d to see the logs. This is the best way to see what the app is doing.
 
 ### Swarm Mode
 Create a network
