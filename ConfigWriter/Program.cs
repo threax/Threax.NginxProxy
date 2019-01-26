@@ -34,6 +34,7 @@ namespace DockerClient
                 {
                     if (await LoadConfig(host, network, outFile))
                     {
+                        Console.WriteLine("Reloading nginx.");
                         using (var reload = Process.Start("nginx", "-s reload"))
                         {
                             reload.WaitForExit();
