@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ConfigWriter": {
+      "commandName": "Project",
+      "commandLineArgs": "http://localhost:2375 appnet C:/Development/DockerAppServer/nginx/nginx.conf"
+    }
+  }
+}

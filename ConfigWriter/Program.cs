@@ -16,8 +16,9 @@ namespace DockerClient
         static async Task Main(string[] args)
         {
             //var host = "unix:///var/run/docker.sock"; //from inside container
-            var host = "http://localhost:2375"; //insecure
-            var network = "appnet";
+            var host = args[0];
+            var network = args[1];
+            var outFile = args[2];
 
             var config = new DockerClientConfiguration(new Uri(host));
             var client = config.CreateClient();
@@ -39,7 +40,7 @@ namespace DockerClient
             var configWriter = new NginxConfWriter();
             var nginxConfig = configWriter.GetConfig(threaxNginxLabeled);
 
-            using(var writer = new StreamWriter(File.Open("C:/Development/DockerAppServer/nginx/nginx.conf", FileMode.Create)))
+            using (var writer = new StreamWriter(File.Open(outFile, FileMode.Create)))
             {
                 await writer.WriteAsync(nginxConfig);
             }
