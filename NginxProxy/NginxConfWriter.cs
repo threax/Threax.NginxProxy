@@ -52,7 +52,6 @@ server {{
             proxy_set_header   X-Forwarded-Host $server_name;
             proxy_set_header   X-Forwarded-Proto $scheme;
             proxy_set_header   X-Forwarded-Port $server_port;
-            add_header         X-Frame-Options SAMEORIGIN;
             # This enables ssl to work from target containers, would have to call https above
             #proxy_ssl_trusted_certificate /etc/sslbackend/localhost.cert;
             #proxy_ssl_verify       off;
