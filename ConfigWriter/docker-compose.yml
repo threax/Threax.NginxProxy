@@ -1,0 +1,27 @@
+version: "3"
+networks:
+  appnet:
+    external:
+      name: appnet
+
+services:
+  server:
+    image: threax.proxy
+    container_name: threaxproxy
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    networks:
+      - appnet
+    volumes:
+      - ../../DockerAppServer/certbot-data:/etc/ssl
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "80:80"
+      - "443:443"
+    build:
+      context:  .
+      dockerfile: Dockerfile
+    # logging:
+      # driver: fluentd
