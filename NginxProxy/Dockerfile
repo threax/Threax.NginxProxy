@@ -8,7 +8,7 @@ RUN dotnet restore NginxProxy.csproj
 RUN dotnet build NginxProxy.csproj -c Release -o /app
 
 FROM build AS publish
-RUN dotnet publish NginxProxy.csproj -c Release -r debian-x64 --self-contained true -o /app
+RUN dotnet publish NginxProxy.csproj -c Release -r linux-x64 --self-contained true -o /app
 
 FROM base AS final
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
