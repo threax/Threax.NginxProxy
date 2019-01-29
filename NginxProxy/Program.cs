@@ -83,7 +83,7 @@ namespace DockerClient
                 Console.WriteLine("New mappings found.");
                 foreach (var item in containers)
                 {
-                    Console.WriteLine($"Mapping {item.Host} with port {item.Port} to {item.Ip} for container {item.Name} from {item.Image}");
+                    Console.WriteLine($"Mapping {item.ExternalHost} with port {item.InternalPort} to {item.InternalHost} for container {item.Name} from {item.Image}");
                 }
 
                 using (var writer = new StreamWriter(File.Open(outFile, FileMode.Create)))
@@ -102,36 +102,34 @@ namespace DockerClient
             return networkContainers.Where(i => i.GetThreaxHost() != null)
                 .Select(i => new ContainerNetworkInfo
                 {
-                    Host = i.GetThreaxHost(),
-                    Port = i.GetThreaxPort(),
+                    ExternalHost = i.GetThreaxHost(),
+                    InternalPort = i.GetThreaxPort(),
                     Name = i.Names.FirstOrDefault(),
                     Image = i.Image,
-                    Ip = i.NetworkSettings.Networks[network].IPAddress,
+                    InternalHost = i.NetworkSettings.Networks[network].IPAddress,
                     MaxBodySize = "0" //i.GetThreaxMaxBodySize() //For now have to use 0 here, doesnt work otherwise
                 });
         }
 
         private static async Task<IEnumerable<ContainerNetworkInfo>> GetSwarmContainers(string network, Docker.DotNet.DockerClient client)
         {
+            Console.WriteLine("Loading aliases from networks with dns resolve");
+
             var networkInfo = await client.Networks.InspectNetworkAsync(network);
             var services = await client.Swarm.ListServicesAsync();
-            var networkServices = services.Where(i => i.Endpoint.VirtualIPs.Any(ip => ip.NetworkID == networkInfo.ID));
+            var networkServices = services.Where(i => i.Spec.TaskTemplate.Networks.Any(n => n.Target == networkInfo.ID));
+
             return networkServices.Where(i => i.GetThreaxHost() != null)
                 .Select(i =>
                 {
-                    var ip = i.Endpoint.VirtualIPs.Where(n => n.NetworkID == networkInfo.ID).Select(j => j.Addr).First();
-                    var slashIndex = ip.IndexOf('/');
-                    if(slashIndex != -1)
-                    {
-                        ip = ip.Substring(0, slashIndex);
-                    }
+                    var internalHost = i.Spec.TaskTemplate.Networks.Where(n => n.Target == networkInfo.ID).First().Aliases.First();
                     return new ContainerNetworkInfo
                     {
-                        Host = i.GetThreaxHost(),
-                        Port = i.GetThreaxPort(),
+                        ExternalHost = i.GetThreaxHost(),
+                        InternalPort = i.GetThreaxPort(),
                         Name = i.Spec.Name,
                         Image = i.Spec.TaskTemplate.ContainerSpec.Image,
-                        Ip = ip,
+                        InternalHost = internalHost,
                         MaxBodySize = "0" //i.GetThreaxMaxBodySize() //For now have to use 0 here, doesnt work otherwise
                     };
                 });

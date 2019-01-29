@@ -28,10 +28,10 @@ http {{
 ");
             foreach(var networkInfo in networkInfos)
             {
-                var host = networkInfo.Ip;
-                if(networkInfo.Port != null)
+                var host = networkInfo.InternalHost;
+                if(networkInfo.InternalPort != null)
                 {
-                    host += ":" + networkInfo.Port;
+                    host += ":" + networkInfo.InternalPort;
                 }
 
                 result.Append($@"
@@ -41,10 +41,12 @@ server {{
 		ssl_certificate       /run/secrets/public.pem;
 		ssl_certificate_key   /run/secrets/private.pem;
 
-		server_name {networkInfo.Host};
+		server_name {networkInfo.ExternalHost};
  
         location / {{
-            proxy_pass         http://{host};
+            resolver 127.0.0.11 ipv6=off;			#docker embedded dns ip
+            set $upstream {host};
+            proxy_pass         http://$upstream;
             proxy_redirect     off;
             proxy_set_header   Host $host;
             proxy_set_header   X-Real-IP $remote_addr;
