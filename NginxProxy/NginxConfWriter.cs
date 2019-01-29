@@ -44,7 +44,7 @@ server {{
 		server_name {networkInfo.ExternalHost};
  
         location / {{
-            resolver 127.0.0.11 ipv6=off;			#docker embedded dns ip
+            resolver 127.0.0.11 ipv6=off valid=30s;         #docker embedded dns ip
             set $upstream {host};
             proxy_pass         http://$upstream;
             proxy_redirect     off;
