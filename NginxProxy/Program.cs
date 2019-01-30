@@ -18,7 +18,6 @@ namespace DockerClient
     {
         static async Task Main(string[] args)
         {
-            //var host = "unix:///var/run/docker.sock"; //from inside container
             var host = "unix:///var/run/docker.sock";
             var network = "appnet";
             var outFile = "/etc/nginx/nginx.conf";
@@ -28,7 +27,7 @@ namespace DockerClient
 
             if (swarmMode)
             {
-                Console.WriteLine("Using docker swarm mode.");
+                Console.WriteLine("Using docker swarm mode with aliases.");
             }
 
             //Load the config once for initial settings
@@ -120,7 +119,8 @@ namespace DockerClient
             return networkServices.Where(i => i.GetThreaxHost() != null)
                 .Select(i =>
                 {
-                    var internalHost = i.Spec.TaskTemplate.Networks.Where(n => n.Target == networkInfo.ID).First().Aliases.First();
+                    //Use specified alias if there is one, otherwise use the first one from the network's settings
+                    var internalHost = i.GetThreaxAlias() ?? i.Spec.TaskTemplate.Networks.Where(n => n.Target == networkInfo.ID).First().Aliases.First();
                     return new ContainerNetworkInfo
                     {
                         ExternalHost = i.GetThreaxHost(),

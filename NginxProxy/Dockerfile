@@ -1,4 +1,7 @@
 ﻿FROM nginx AS base
+# The following lines will install some networking tools useful for debugging.
+# RUN apt-get update
+# RUN apt-get install iputils-ping dnsutils curl -y
 WORKDIR /app
 
 FROM threax/build AS build

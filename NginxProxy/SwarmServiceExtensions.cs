@@ -22,6 +22,11 @@ namespace DockerClient
             return ReadLabel(response, throwOnMissing, "threax.nginx.maxbodysize");
         }
 
+        public static String GetThreaxAlias(this SwarmService response, bool throwOnMissing = false)
+        {
+            return ReadLabel(response, throwOnMissing, "threax.nginx.alias");
+        }
+
         private static string ReadLabel(SwarmService response, bool throwOnMissing, string label)
         {
             if (response.Spec.TaskTemplate.ContainerSpec.Labels.TryGetValue(label, out var result))
