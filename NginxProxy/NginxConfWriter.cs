@@ -57,7 +57,15 @@ server {{
             # This enables ssl to work from target containers, would have to call https above
             #proxy_ssl_trusted_certificate /etc/sslbackend/localhost.cert;
             #proxy_ssl_verify       off;
-            #proxy_ssl_server_name  on;");
+            #proxy_ssl_server_name  on;
+
+            #Stuff to try to fix 504 errors
+            #https://stackoverflow.com/questions/44635169/configure-identityserver4-behind-nginx-reverse-proxy
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection keep-alive;
+            proxy_cache_bypass $http_upgrade;
+");
 
                 if(networkInfo.MaxBodySize != null)
                 {
