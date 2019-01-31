@@ -16,6 +16,8 @@ namespace DockerClient
 {
     class Program
     {
+        static bool showConfig;
+
         static async Task Main(string[] args)
         {
             var host = "unix:///var/run/docker.sock";
@@ -24,6 +26,7 @@ namespace DockerClient
             var sleepTime = 5000;
             bool swarmMode = false;
             bool.TryParse(Environment.GetEnvironmentVariable("THREAX_NGINX_SWARM_MODE") ?? "false", out swarmMode);
+            bool.TryParse(Environment.GetEnvironmentVariable("THREAX_NGINX_SHOW_CONFIG") ?? "false", out showConfig);
 
             if (swarmMode)
             {
@@ -83,6 +86,11 @@ namespace DockerClient
                 foreach (var item in containers)
                 {
                     Console.WriteLine($"Mapping {item.ExternalHost} to {item.InternalHost} with port {item.InternalPort} for container {item.Name} from {item.Image}");
+                }
+
+                if(showConfig)
+                {
+                    Console.WriteLine(nginxConfig);
                 }
 
                 using (var writer = new StreamWriter(File.Open(outFile, FileMode.Create)))
