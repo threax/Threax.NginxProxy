@@ -6,6 +6,8 @@ services:
     build:
       context: .
       dockerfile: NetworkMonitor/Dockerfile
+    networks:
+      - monitornet
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - proxy-config:/data
@@ -23,7 +25,6 @@ services:
     networks:
       - appnet
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
       - proxy-config:/data
     secrets:
       - public.pem
@@ -37,12 +38,13 @@ services:
 networks:
   appnet:
     external: true
+  monitornet:
 
 secrets:
   public.pem:
-    file: Certs/public.pem
+    file: ./Certs/public.pem
   private.pem:
-    file: Certs/private.pem
+    file: ./Certs/private.pem
 
 volumes:
   proxy-config:

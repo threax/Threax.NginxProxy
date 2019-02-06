@@ -16,6 +16,8 @@ namespace NetworkMonitor
 
         static async Task Main(string[] args)
         {
+            Console.WriteLine("Starting Threax.NetworkMonitor");
+
             var host = "unix:///var/run/docker.sock";
             var network = "appnet";
             var outFile = "/data/config/nginx.conf";
@@ -56,6 +58,12 @@ namespace NetworkMonitor
 
             var configWriter = new NginxConfWriter();
             var nginxConfig = configWriter.GetConfig(containers);
+
+            var directory = Path.GetDirectoryName(outFile);
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
 
             if(!File.Exists(outFile))
             {

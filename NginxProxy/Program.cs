@@ -18,10 +18,20 @@ namespace DockerClient
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("Starting Threax.NginxProxy");
+
             var nginxConf = "/etc/nginx/nginx.conf";
 
+            Console.WriteLine($"Looking for config {nginxConf}");
+            while(!File.Exists(nginxConf))
+            {
+                Console.WriteLine($"File {nginxConf} does not exist. Will try again in 1 sec.");
+                Thread.Sleep(1000);
+            }
+
             //Start nginx
-            var processStartInfo = new ProcessStartInfo($"nginx -c {nginxConf}");
+            Console.WriteLine($"Starting Nginx");
+            var processStartInfo = new ProcessStartInfo("nginx", $"-c {nginxConf}");
             using (var process = Process.Start(processStartInfo))
             {
                 
@@ -33,10 +43,13 @@ namespace DockerClient
                 watcher.Filter = Path.GetFileName(nginxConf);
 
                 watcher.Changed += Watcher_Changed;
-            }
+                watcher.Created += Watcher_Changed;
 
-            Console.WriteLine("Press 'q' to quit the proxy.");
-            while (Console.Read() != 'q') ;
+                watcher.EnableRaisingEvents = true;
+
+                Console.WriteLine("Press 'q' to quit the proxy.");
+                while (Console.Read() != 'q') ;
+            }
         }
 
         private static void Watcher_Changed(object sender, FileSystemEventArgs e)
