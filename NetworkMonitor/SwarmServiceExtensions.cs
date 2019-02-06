@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace DockerClient
+namespace NetworkMonitor
 {
     public static class SwarmServiceExtensions
     {

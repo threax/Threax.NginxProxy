@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace DockerClient
+namespace NetworkMonitor
 {
     public class ContainerNetworkInfo
     {

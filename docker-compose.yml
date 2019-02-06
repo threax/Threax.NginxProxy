@@ -1,0 +1,49 @@
+version: '3.5'
+
+services:
+  monitor:
+    image: threax/nginxproxy-monitor
+    build:
+      context: .
+      dockerfile: NetworkMonitor/Dockerfile
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - proxy-config:/data
+    environment:
+      - THREAX_NGINX_SHOW_CONFIG=true
+      - THREAX_NGINX_SWARM_MODE=true
+    # logging:
+      # driver: fluentd
+
+  app:
+    image: threax/nginxproxy
+    build:
+      context:  .
+      dockerfile: NginxProxy/Dockerfile
+    networks:
+      - appnet
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - proxy-config:/data
+    secrets:
+      - public.pem
+      - private.pem
+    ports:
+      - "80:80"
+      - "443:443"
+    # logging:
+      # driver: fluentd
+
+networks:
+  appnet:
+    external: true
+
+secrets:
+  public.pem:
+    file: Certs/public.pem
+  private.pem:
+    file: Certs/private.pem
+
+volumes:
+  proxy-config:
+    external: true
