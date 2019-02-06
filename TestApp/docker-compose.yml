@@ -1,0 +1,21 @@
+version: '3.5'
+
+services:
+  app:
+    image: microsoft/dotnet-samples:aspnetapp
+    networks:
+      appnet:
+        aliases:
+          - up_testapp.threax.com
+    environment:
+      - ASPNETCORE_URLS=http://*:5000
+      - ASPNETCORE_ENVIRONMENT=Dev
+      - EDITY_MCEDITFACE_APPNAME=OlsDocs
+    labels:
+      - "threax.nginx.host=testapp.threax.com"
+      - "threax.nginx.port=5000"
+      - "threax.nginx.alias=up_testapp.threax.com"
+
+networks:
+  appnet:
+    external: true
