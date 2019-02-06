@@ -20,7 +20,7 @@ namespace DockerClient
         {
             Console.WriteLine("Starting Threax.NginxProxy");
 
-            var nginxConf = "/etc/nginx/nginx.conf";
+            var nginxConf = "/data/config/nginx.conf";
 
             Console.WriteLine($"Looking for config {nginxConf}");
             while(!File.Exists(nginxConf))
