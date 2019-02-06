@@ -23,12 +23,16 @@ namespace NetworkMonitor
             var outFile = "/data/config/nginx.conf";
             var sleepTime = 5000;
             bool swarmMode = false;
-            bool.TryParse(Environment.GetEnvironmentVariable("THREAX_NGINX_SWARM_MODE") ?? "false", out swarmMode);
+            bool.TryParse(Environment.GetEnvironmentVariable("THREAX_NGINX_SWARM_MODE") ?? "true", out swarmMode);
             bool.TryParse(Environment.GetEnvironmentVariable("THREAX_NGINX_SHOW_CONFIG") ?? "false", out showConfig);
 
             if (swarmMode)
             {
                 Console.WriteLine("Using docker swarm mode with aliases.");
+            }
+            else
+            {
+                Console.WriteLine("Using local containers with ips.");
             }
 
             //Load the config once for initial settings
