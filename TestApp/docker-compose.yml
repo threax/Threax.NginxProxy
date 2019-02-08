@@ -15,6 +15,7 @@ services:
       - "threax.nginx.host=testapp.threax.com"
       - "threax.nginx.port=5000"
       - "threax.nginx.alias=up_testapp.threax.com"
+      - "threax.nginx.cert=testcert"
 
 networks:
   appnet:

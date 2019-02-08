@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,12 +16,13 @@ namespace NetworkMonitor
         static bool showConfig;
         static DockerClientConfiguration config;
         static DockerClient client;
+        static MD5 md5 = MD5.Create();
 
         static async Task Main(string[] args)
         {
             try
             {
-                Console.WriteLine("Starting Threax.NetworkMonitor");
+                Console.WriteLine("Starting Threax.NetworkMonitor with cert support66.");
 
                 var host = "unix:///var/run/docker.sock";
                 var network = "appnet";
@@ -54,6 +56,7 @@ namespace NetworkMonitor
             }
             finally
             {
+                md5?.Dispose();
                 config?.Dispose();
                 client?.Dispose();
             }
@@ -72,13 +75,47 @@ namespace NetworkMonitor
             }
 
             var configWriter = new NginxConfWriter();
-            var nginxConfig = configWriter.GetConfig(containers);
 
+            //Ensure output directory exists
             var directory = Path.GetDirectoryName(outFile);
             if (!Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
+
+            //Write out any certs that need updating
+            var certDir = Path.Combine(directory, "certs");
+            if (!Directory.Exists(certDir))
+            {
+                Directory.CreateDirectory(certDir);
+            }
+
+            var nginxConfig = configWriter.GetConfig(containers.Select(i =>
+            {
+                //Handle certs here
+                if (i.Cert != null)
+                {
+                    var certFile = Path.Combine(certDir, $"{i.InternalHost}_{i.InternalPort}.pem");
+                    if (File.Exists(certFile))
+                    {
+                        String existing;
+                        using (var stream = new StreamReader(File.Open(certFile, FileMode.Open, FileAccess.Read, FileShare.Read)))
+                        {
+                            existing = stream.ReadToEnd();
+                        }
+                        if(i.Cert != existing)
+                        {
+                            using(var writeStream = new StreamWriter(File.Open(certFile, FileMode.Create, FileAccess.Write, FileShare.None)))
+                            {
+                                writeStream.Write(i.Cert);
+                            }
+                        }
+                    }
+                    i.Cert = certFile;
+                }
+
+                return i;
+            }));
 
             if(!File.Exists(outFile))
             {
@@ -148,6 +185,7 @@ namespace NetworkMonitor
                         Name = i.Spec.Name,
                         Image = i.Spec.TaskTemplate.ContainerSpec.Image,
                         InternalHost = internalHost,
+                        Cert = i.GetThreaxCert(),
                         MaxBodySize = "0" //i.GetThreaxMaxBodySize() //For now have to use 0 here, doesnt work otherwise
                     };
                 });

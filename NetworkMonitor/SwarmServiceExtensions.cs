@@ -27,6 +27,11 @@ namespace NetworkMonitor
             return ReadLabel(response, throwOnMissing, "threax.nginx.alias");
         }
 
+        public static String GetThreaxCert(this SwarmService response, bool throwOnMissing = false)
+        {
+            return ReadLabel(response, throwOnMissing, "threax.nginx.cert");
+        }
+
         private static string ReadLabel(SwarmService response, bool throwOnMissing, string label)
         {
             if (response.Spec.TaskTemplate.ContainerSpec.Labels.TryGetValue(label, out var result))
