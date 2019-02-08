@@ -13,6 +13,8 @@ namespace NetworkMonitor
 events {{ worker_connections 1024; }}
  
 http {{
+    # error_log stderr warn;
+
     sendfile on;
     server_tokens off;
 
@@ -69,32 +71,30 @@ http {{
         server_name {networkInfo.ExternalHost};
  
         location / {{
-            set $upstream      {host};");
+            proxy_http_version             1.1;
+            set $upstream                  {host};");
 
 
 
                 if (networkInfo.Cert != null)
                 {
                     result.Append($@"
-            proxy_pass         https://$upstream;
-            # https://docs.nginx.com/nginx/admin-guide/security-controls/securing-http-traffic-upstream/
-            # This enables ssl to work from target containers, would have to call https above
-            proxy_ssl_trusted_certificate {networkInfo.Cert};
-            proxy_ssl_session_reuse on;
-            # proxy_ssl_verify              off;
-            # proxy_ssl_server_name         on;
+            proxy_pass                      https://$upstream;
+            proxy_ssl_session_reuse         on;
+            # proxy_ssl_trusted_certificate   {networkInfo.Cert};
+            # proxy_ssl_verify                on;
 ");
                 }
                 else
                 {
                     result.Append($@"
-            proxy_pass         http://$upstream;");
+            proxy_pass                      http://$upstream;");
                 }
 
                 if(networkInfo.MaxBodySize != null)
                 {
                     result.Append($@"
-            client_max_body_size {networkInfo.MaxBodySize};
+            client_max_body_size            {networkInfo.MaxBodySize};
 ");
                 }
 

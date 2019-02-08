@@ -22,7 +22,7 @@ namespace NetworkMonitor
         {
             try
             {
-                Console.WriteLine("Starting Threax.NetworkMonitor with cert support66.");
+                Console.WriteLine("Starting Threax.NetworkMonitor.");
 
                 var host = "unix:///var/run/docker.sock";
                 var network = "appnet";
@@ -95,6 +95,7 @@ namespace NetworkMonitor
                 //Handle certs here
                 if (i.Cert != null)
                 {
+                    bool writeCert = true;
                     var certFile = Path.Combine(certDir, $"{i.InternalHost}_{i.InternalPort}.pem");
                     if (File.Exists(certFile))
                     {
@@ -103,12 +104,14 @@ namespace NetworkMonitor
                         {
                             existing = stream.ReadToEnd();
                         }
-                        if(i.Cert != existing)
+                        writeCert = i.Cert != existing;
+                    }
+
+                    if(writeCert)
+                    {
+                        using (var writeStream = new StreamWriter(File.Open(certFile, FileMode.Create, FileAccess.Write, FileShare.None)))
                         {
-                            using(var writeStream = new StreamWriter(File.Open(certFile, FileMode.Create, FileAccess.Write, FileShare.None)))
-                            {
-                                writeStream.Write(i.Cert);
-                            }
+                            writeStream.Write(i.Cert);
                         }
                     }
                     i.Cert = certFile;
