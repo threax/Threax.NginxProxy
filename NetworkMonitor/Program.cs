@@ -90,35 +90,7 @@ namespace NetworkMonitor
                 Directory.CreateDirectory(certDir);
             }
 
-            var nginxConfig = configWriter.GetConfig(containers.Select(i =>
-            {
-                //Handle certs here
-                if (i.Cert != null)
-                {
-                    bool writeCert = true;
-                    var certFile = Path.Combine(certDir, $"{i.InternalHost}_{i.InternalPort}.pem");
-                    if (File.Exists(certFile))
-                    {
-                        String existing;
-                        using (var stream = new StreamReader(File.Open(certFile, FileMode.Open, FileAccess.Read, FileShare.Read)))
-                        {
-                            existing = stream.ReadToEnd();
-                        }
-                        writeCert = i.Cert != existing;
-                    }
-
-                    if(writeCert)
-                    {
-                        using (var writeStream = new StreamWriter(File.Open(certFile, FileMode.Create, FileAccess.Write, FileShare.None)))
-                        {
-                            writeStream.Write(i.Cert);
-                        }
-                    }
-                    i.Cert = certFile;
-                }
-
-                return i;
-            }));
+            var nginxConfig = configWriter.GetConfig(containers);
 
             if(!File.Exists(outFile))
             {
@@ -188,7 +160,7 @@ namespace NetworkMonitor
                         Name = i.Spec.Name,
                         Image = i.Spec.TaskTemplate.ContainerSpec.Image,
                         InternalHost = internalHost,
-                        Cert = i.GetThreaxCert(),
+                        UseHttps = i.GetThreaxUseHttps(),
                         MaxBodySize = "0" //i.GetThreaxMaxBodySize() //For now have to use 0 here, doesnt work otherwise
                     };
                 });

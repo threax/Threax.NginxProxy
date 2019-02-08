@@ -27,9 +27,10 @@ namespace NetworkMonitor
             return ReadLabel(response, throwOnMissing, "threax.nginx.alias");
         }
 
-        public static String GetThreaxCert(this SwarmService response, bool throwOnMissing = false)
+        public static bool GetThreaxUseHttps(this SwarmService response, bool throwOnMissing = false)
         {
-            return ReadLabel(response, throwOnMissing, "threax.nginx.cert");
+            var val = ReadLabel(response, throwOnMissing, "threax.nginx.https");
+            return String.IsNullOrWhiteSpace(val) ? false : bool.Parse(val);
         }
 
         private static string ReadLabel(SwarmService response, bool throwOnMissing, string label)

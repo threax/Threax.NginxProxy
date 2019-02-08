@@ -12,6 +12,6 @@ namespace NetworkMonitor
         public string InternalHost { get; set; }
         public string InternalPort { get; set; }
         public String MaxBodySize { get; set; }
-        public String Cert { get; set; }
+        public bool UseHttps { get; set; }
     }
 }

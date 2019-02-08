@@ -76,14 +76,15 @@ http {{
 
 
 
-                if (networkInfo.Cert != null)
+                if (networkInfo.UseHttps)
                 {
                     result.Append($@"
             proxy_pass                      https://$upstream;
             proxy_ssl_session_reuse         on;
-            # proxy_ssl_trusted_certificate   {networkInfo.Cert};
-            # proxy_ssl_verify                on;
 ");
+            //proxy_ssl_trusted_certificate   {networkInfo.Cert};
+            //proxy_ssl_verify                on;
+
                 }
                 else
                 {
