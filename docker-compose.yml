@@ -39,6 +39,7 @@ networks:
   appnet:
     external: true
   monitornet:
+    external: true
 
 secrets:
   public.pem:

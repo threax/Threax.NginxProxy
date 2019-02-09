@@ -48,7 +48,11 @@ namespace DockerClient
                 watcher.EnableRaisingEvents = true;
 
                 Console.WriteLine("Press 'q' to quit the proxy.");
-                while (Console.Read() != 'q') ;
+                while (Console.Read() != 'q')
+                {
+                    //Have to do something with the main loop, but mostly sleep
+                    Thread.Sleep(10000);
+                }
             }
         }
 
