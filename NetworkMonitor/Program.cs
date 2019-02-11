@@ -17,6 +17,7 @@ namespace NetworkMonitor
         static DockerClientConfiguration config;
         static DockerClient client;
         static MD5 md5 = MD5.Create();
+        static DockerEventListener dockerEventListener;
 
         static async Task Main(string[] args)
         {
@@ -27,7 +28,6 @@ namespace NetworkMonitor
                 var host = "unix:///var/run/docker.sock";
                 var network = "appnet";
                 var outFile = "/data/config/nginx.conf";
-                var sleepTime = 5000;
                 bool swarmMode = false;
                 bool.TryParse(Environment.GetEnvironmentVariable("THREAX_NGINX_SWARM_MODE") ?? "true", out swarmMode);
                 bool.TryParse(Environment.GetEnvironmentVariable("THREAX_NGINX_SHOW_CONFIG") ?? "false", out showConfig);
@@ -47,15 +47,21 @@ namespace NetworkMonitor
                 //Load the config once for initial settings
                 await LoadConfig(host, network, outFile, swarmMode);
 
+                dockerEventListener = new DockerEventListener(network);
+                dockerEventListener.Start();
+
                 //Start polling for changes
-                while (true)
+                var evt = await dockerEventListener.GetNextTask();
+                while (evt != DockerEvent.ProcessEnded)
                 {
+                    Console.WriteLine("Got docker event " + evt);
                     await LoadConfig(host, network, outFile, swarmMode);
-                    Thread.Sleep(sleepTime);
+                    evt = await dockerEventListener.GetNextTask();
                 }
             }
             finally
             {
+                dockerEventListener.Dispose();
                 md5?.Dispose();
                 config?.Dispose();
                 client?.Dispose();
