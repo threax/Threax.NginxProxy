@@ -17,19 +17,19 @@ namespace NetworkMonitor
         static DockerClientConfiguration config;
         static DockerClient client;
         static MD5 md5 = MD5.Create();
+        static DockerEventListener dockerEventListener;
 
         static async Task Main(string[] args)
         {
             try
             {
-                Console.WriteLine("Starting Threax.NetworkMonitor.");
+                Console.WriteLine("Starting Threax.NetworkMonitor with polling.");
 
                 var host = "unix:///var/run/docker.sock";
                 var network = "appnet";
                 var outFile = "/data/config/nginx.conf";
-                var sleepTime = 5000;
-                bool swarmMode = false;
-                bool.TryParse(Environment.GetEnvironmentVariable("THREAX_NGINX_SWARM_MODE") ?? "true", out swarmMode);
+                int.TryParse(Environment.GetEnvironmentVariable("THREAX_NGINX_POLL_SLEEP_TIME") ?? "5000", out var sleepTime);
+                bool.TryParse(Environment.GetEnvironmentVariable("THREAX_NGINX_SWARM_MODE") ?? "true", out var swarmMode);
                 bool.TryParse(Environment.GetEnvironmentVariable("THREAX_NGINX_SHOW_CONFIG") ?? "false", out showConfig);
 
                 if (swarmMode)
@@ -47,6 +47,19 @@ namespace NetworkMonitor
                 //Load the config once for initial settings
                 await LoadConfig(host, network, outFile, swarmMode);
 
+                ////Start listening for changes
+                ////This method should be better, but docker events seems to be a bit unreliable, will use polling for now
+                ////If you try to use this enable docker installation in the dockerfile. Otherwise you will get Unhandled Exception: System.ComponentModel.Win32Exception: No such file or directory.
+                //dockerEventListener = new DockerEventListener(network);
+                //dockerEventListener.Start();
+                //var evt = await dockerEventListener.GetNextTask();
+                //while (evt != DockerEvent.ProcessEnded)
+                //{
+                //    Console.WriteLine("Got docker event " + evt);
+                //    await LoadConfig(host, network, outFile, swarmMode);
+                //    evt = await dockerEventListener.GetNextTask();
+                //}
+
                 //Start polling for changes
                 while (true)
                 {
@@ -56,6 +69,7 @@ namespace NetworkMonitor
             }
             finally
             {
+                dockerEventListener?.Dispose();
                 md5?.Dispose();
                 config?.Dispose();
                 client?.Dispose();

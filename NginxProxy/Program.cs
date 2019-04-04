@@ -51,6 +51,8 @@ namespace DockerClient
                 while (Console.Read() != 'q')
                 {
                     //Have to do something with the main loop, but mostly sleep
+                    //Have to poll here, or else we will get an error when the app runs in a container
+                    //Console.ReadKey cannot be used.
                     Thread.Sleep(10000);
                 }
             }
